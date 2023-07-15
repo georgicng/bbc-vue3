@@ -1,6 +1,6 @@
 # bbc
 
-This is a rewrite of my firs vue project in Vue 3 (with Vite), using composition api.
+This is a rewrite of my first vue project (bbc - butter bake cakes, an e-commerce site) with Vue 3 (composition api), Pinia and Vite stack.
 
 ## Recommended IDE Setup
 

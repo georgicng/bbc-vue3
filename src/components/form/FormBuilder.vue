@@ -1,30 +1,44 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import text from './BasicInput.vue'
 import select from './BasicSelect.vue'
 import textarea from './InputArea.vue'
 
-const props = defineProps({ rows: Array, data: Object })
+const props = defineProps({
+  fields: { type: Object, required: true },
+  modelValue: { type: Object, required: true }
+})
+const emit = defineEmits(['change', 'submit'])
 const components = {
-  'f-text': text,
-  'f-number': text,
-  'f-select': select,
-  'f-textarea': textarea
+  text,
+  number: text,
+  email: text,
+  select,
+  textarea
 }
-const model = ref(props.data)
+const model = ref(props.modelValue)
+const records = computed(() =>
+  Object.entries(props.fields).map(([key, value]) => ({ key, ...value }))
+)
+watch(
+  model,
+  (value) => {
+    emit('update:modelValue', value)
+  },
+  { deep: true }
+)
 </script>
 
 <template>
-  <form>
-    <div class="form-row" v-for="(row, rKey) in rows" :key="`r-${rKey}`">
-      <component
-        v-for="(col, cKey) in row.cols"
-        :key="`r-${rKey}-c-${cKey}`"
-        :is="components[`f-${col.type}`]"
-        :field="col"
-        v-model="model[col.prop]"
-      />
-    </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
+  <form novalidate @submit.prevent="$emit('submit', model)">
+    <component
+      v-for="record in records"
+      :key="record.key"
+      :is="components[`${record.type}`]"
+      :field="record"
+      v-model="model[record.key]"
+    />
+    <slot> </slot>
+    <slot name="actions"><button type="submit" class="btn btn-primary mb-2">Submit</button></slot>
   </form>
 </template>

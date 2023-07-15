@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSupportStore } from '../stores/support'
 import FormBuilder from '../components/form/FormBuilder.vue'
@@ -41,75 +42,33 @@ const supportStore = useSupportStore()
 const { processingContact, contactError, contact } = storeToRefs(supportStore)
 const { submitContact } = supportStore
 
-const fields = [
-  {
-    "cols": [
-      {
-        "cols": 6,
-        "type": "text",
-        "prop": "firstname",
-        "name": "firstname",
-        "label": "First name"
-      },
-      {
-        "cols": 6,
-        "type": "text",
-        "prop": "lastname",
-        "name": "lastname",
-        "label": "Last name"
-      }
-    ]
+const fields = {
+  name: {
+    type: 'text',
+    label: 'Name'
   },
-  {
-    "cols": [
-      {
-        "cols": 6,
-        "type": "number",
-        "prop": "age",
-        "name": "age",
-        "label": "Age"
-      },
-      {
-        "cols": 6,
-        "type": "select",
-        "prop": "gender",
-        "name": "gender",
-        "label": "Gender",
-        "options": [
-          {
-            value: "male",
-            text: "Male"
-          },
-          {
-            value: "female",
-            text: "Female"
-          }
-        ]
-      }
-    ]
+  subject: {
+    type: 'text',
+    label: 'Subject'
   },
-  {
-    "cols": [
-      {
-        "cols": 12,
-        "type": "textarea",
-        "prop": "address",
-        "name": "address",
-        "label": "Address"
-      }
-    ]
+  email: {
+    type: 'email',
+    label: 'Email'
+  },
+  message: {
+    type: 'textarea',
+    label: 'Message'
   }
-]
-const model = {
-  firstname: 'george',
-  lastname: 'ikpugbu',
-  age: 0,
-  gender: '',
-  address: ''
 }
+const model = ref({
+  name: '',
+  subject: '',
+  email: '',
+  message: '',
+})
 
 const log = (type, data) => console.error(type, data)
-const onSubmit = ({ formData }) => {
+const onSubmit = (formData ) => {
   submitContact(formData)
 }
 </script>
@@ -123,7 +82,7 @@ const onSubmit = ({ formData }) => {
         <div class="no-back">
           <div class="row">
             <div class="col-md-6 offset-lg-2 col-lg-4 my-3 text-left">
-              <FormBuilder :rows="fields" :data="model" />
+              <FormBuilder :fields="fields" v-model="model" @submit="onSubmit" />
               <div v-if="processingContact" class="spinner-grow spinner-grow-sm" role="status">
                 <span class="sr-only">Loading...</span>
               </div>

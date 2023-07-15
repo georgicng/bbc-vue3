@@ -1,8 +1,16 @@
 <script setup>
-defineProps({
+import useInputValidator from '../../composables/useInputValidator'
+import ErrorDisplay from './ErrorDisplay.vue'
+
+const props = defineProps({
   field: { type: Object, required: true },
   modelValue: { type: String, required: true }
 })
+
+const emit = defineEmits(['update:modelValue'])
+const { input, errors } = useInputValidator(props.modelValue, props.validators, (value) =>
+  emit('update:modelValue', value)
+)
 </script>
 
 <template>
@@ -12,12 +20,12 @@ defineProps({
       class="form-control"
       :id="field.name"
       :name="field.name"
-      :value="modelValue"
-      @select="$emit('update:modelValue', $event.target.value)"
+      v-model="input"
     >
       <option v-for="(option, key) in field.options" :key="key" :value="option.value">
         {{ option.text }}
       </option>
     </select>
+    <ErrorDisplay :errors="errors" />
   </div>
 </template>
