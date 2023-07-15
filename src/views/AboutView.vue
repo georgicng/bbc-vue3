@@ -1,5 +1,5 @@
 <script setup>
-import { ABOUT_US } from '../utils/config'
+import { ABOUT_US } from '../utils/constants'
 import Heading from '../components/common/Heading.vue'
 
 const title = 'About Us'

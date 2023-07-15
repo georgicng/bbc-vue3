@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { TERMS } from '../utils/config'
+import { TERMS } from '../utils/constants'
 import Heading from '../components/common/Heading.vue'
 
 const title = 'Terms and Conditions'

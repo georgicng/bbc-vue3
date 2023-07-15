@@ -1,5 +1,5 @@
 <script setup>
-import { MENU } from '../../utils/config'
+import { MENU } from '../../utils/constants'
 import { RouterLink } from 'vue-router'
 
 defineProps({

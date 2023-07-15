@@ -1,5 +1,5 @@
 <script setup>
-import { OPTION_TYPE_MAP } from '../../utils/config'
+import { OPTION_TYPE_MAP } from '../../utils/constants'
 import Multiselect from 'multiselect-react-dropdown'
 
 defineProps({

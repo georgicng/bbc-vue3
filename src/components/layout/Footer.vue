@@ -1,5 +1,5 @@
 <script setup>
-import { SOCIALS } from '../../utils/config'
+import { SOCIALS } from '../../utils/constants'
 import { RouterLink } from 'vue-router'
 
 defineProps({

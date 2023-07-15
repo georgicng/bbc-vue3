@@ -1,5 +1,5 @@
 <script setup>
-import { SIZES } from '../../utils/config'
+import { SIZES } from '../../utils/constants'
 
 defineProps({ description: { type: String, required: true } })
 </script>

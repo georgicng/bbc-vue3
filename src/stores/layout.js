@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { MENU } from '../utils/config'
+import { MENU } from '../utils/constants'
 
 const metaMap = MENU.reduce((acc, menu) => ({ ...acc, [menu.path]: menu }), {})
 

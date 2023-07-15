@@ -1,5 +1,5 @@
 <script setup>
-import { CONTACTS, SOCIALS } from '../../utils/config'
+import { CONTACTS, SOCIALS } from '../../utils/constants'
 
 defineProps({
   contacts: {

@@ -1,6 +1,6 @@
 <script setup>
 import Block from '../components/common/Block.vue'
-import { BLOCKS } from '../utils/config'
+import { BLOCKS } from '../utils/constants'
 
 defineProps({
   blocks: {
