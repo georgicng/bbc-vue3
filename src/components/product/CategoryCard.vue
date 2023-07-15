@@ -1,6 +1,6 @@
 <script setup>
 import { RouterLink } from 'vue-router'
-import { getImage, getLink } from '../../utils'
+import { getImage, getLink } from '../../utils/helpers'
 
 defineProps({ category: { type: Object, required: true } })
 </script>

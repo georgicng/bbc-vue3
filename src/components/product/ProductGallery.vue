@@ -1,5 +1,5 @@
 <script setup>
-import { getImage } from '../../utils'
+import { getImage } from '../../utils/helpers'
 
 defineProps({ product: { type: Object, required: true } })
 </script>

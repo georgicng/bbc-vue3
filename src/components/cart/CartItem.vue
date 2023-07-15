@@ -1,6 +1,6 @@
 <script setup>
 import LineOptions from './LineOptions.vue'
-import { getImage } from '../../utils'
+import { getImage } from '../../utils/helpers'
 
 defineProps({
   readonly: { type: Boolean, required: true },
