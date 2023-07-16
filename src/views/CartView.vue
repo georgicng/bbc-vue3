@@ -1,5 +1,6 @@
 <script setup>
-import { useOrderStore } from '../stores/order'
+import { storeToRefs } from 'pinia'
+import { useCartStore } from '../stores/cart'
 import Heading from '../components/common/Heading.vue'
 import CartItems from '../components/cart/CartItems.vue'
 import Coupon from '../components/cart/Coupon.vue'
@@ -7,13 +8,14 @@ import CartTotals from '../components/cart/CartTotals.vue'
 
 const title = 'Your Cart'
 
-const orderStore = useOrderStore()
-const { cart, discount, tax, subtotal, total, cartAction, addDiscountAmount } = orderStore
+const orderStore = useCartStore()
+const { couponValue, cart, discount, tax, subtotal, total} = storeToRefs(orderStore)
+const { getCoupon, cartAction, setDiscount, setCoupon } = orderStore
 
-const { getCoupon, couponValue } = orderStore
 const redeemCoupon = async (coupon) => {
   await getCoupon(coupon)
-  addDiscountAmount({ coupon, discount: couponValue })
+  setCoupon(coupon)
+  setDiscount(couponValue.value)
 }
 </script>
 

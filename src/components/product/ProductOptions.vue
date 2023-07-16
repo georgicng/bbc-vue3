@@ -1,6 +1,6 @@
 <script setup>
 import { OPTION_TYPE_MAP } from '../../utils/constants'
-import Multiselect from 'multiselect-react-dropdown'
+import Multiselect from 'vue-multiselect'
 
 defineProps({
   options: { type: Array, required: true },
@@ -33,12 +33,15 @@ defineProps({
           {{ option.label }}
         </label>
         <Multiselect
-          displayValue="label"
-          :selectedValues="model[option.name]"
+          :multiple="false"
+          track-by="id"
+          label="name"
+          selectLabel="Click to select"
+          deselectLabel="Click to remove"
+          :value="model[option.name]"
           :options="option.options"
-          :isObject="true"
-          :singleSelect="true"
-          @select="$emit('update:model', { key: option.name, value: $event })"
+          :searchable="false"
+          @input="$emit('update:model', { key: option.name, value: $event })"
         ></Multiselect>
       </div>
 
@@ -66,14 +69,17 @@ defineProps({
           {{ option.label }}
         </label>
         <Multiselect
-          displayValue="label"
-          :selectedValues="model[option.name]"
+          :multiple="true"
+          track-by="id"
+          label="name"
+          selectLabel="Click to select"
+          deselectLabel="Click to remove"
+          :max="product_option.maximum"
+          :value="model[option.name]"
           :options="option.options"
-          :isObject="true"
-          :showCheckbox="true"
-          @select="$emit('update:model', { key: option.name, value: $event })"
-          @remove="$emit('update:model', { key: option.name, value: $event })"
-        />
+          :searchable="false"
+          @input="$emit('update:model', { key: option.name, value: $event })"
+        ></Multiselect>
       </div>
 
       <div v-if="option.type == OPTION_TYPE_MAP.TEXTAREA">
