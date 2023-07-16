@@ -1,85 +1,53 @@
 <script setup>
-import { useRef, useMemo, forwardRef, useImperativeHandle } from 'react'
-import validator from '@rjsf/validator-ajv8'
-import Form from '@rjsf/core'
+import { ref, computed } from 'vue'
+import FormBuilder from '../form/FormBuilder.vue'
 
 const props = defineProps({
   user: { type: Object, required: true },
   cityList: { type: Array, required: true }
 })
-const formRef = useRef()
+const formRef = ref(null)
 
-const schema = useMemo(
-  () => ({
-    type: 'object',
-    required: ['firstName', 'lastName', 'email', 'phone', 'address', 'landmark', 'city'],
-    properties: {
-      firstName: { type: 'string', title: 'First name' },
-      lastName: { type: 'string', title: 'Last name' },
-      email: { type: 'string', title: 'Email' },
-      phone: { type: 'string', title: 'Phone' },
-      address: { type: 'string', title: 'Address' },
-      landmark: { type: 'string', title: 'Nearest Landmark' },
-      city: {
-        type: 'string',
-        title: 'City',
-        enum: props.cityList
-      }
-    },
-    ...(props.user.city
-      ? {
-          allOf: [
-            {
-              if: {
-                properties: {
-                  city: {
-                    const: 'Other'
-                  }
-                }
-              },
-              then: {
-                properties: {
-                  altCity: {
-                    type: 'string',
-                    title: 'Other City'
-                  }
-                },
-                required: ['altCity']
-              }
-            }
-          ]
+const fields = computed(() => ({
+  firstName: { type: 'text', label: 'First name', validators: ['required'] },
+  lastName: { type: 'text', label: 'Last name', validators: ['required'] },
+  email: { type: 'email', label: 'Email', validators: ['required'] },
+  phone: { type: 'text', label: 'Phone', validators: ['required'] },
+  address: { type: 'textarea', label: 'Address', validators: ['required'] },
+  landmark: { type: 'text', label: 'Nearest Landmark', validators: ['required'] },
+  city: {
+    type: 'select',
+    label: 'City',
+    options: props.cityList,
+    validators: ['required']
+  },
+  ...(props.user.city === 'Other'
+    ? {
+        altCity: {
+          type: 'text',
+          label: 'Other City',
+          validators: ['required']
         }
-      : {})
-  }),
-  [props.user, props.cityList]
-)
+      }
+    : {})
+}))
 
-const uiSchema = {
-  firstName: {
-    'ui:autofocus': true
-  },
-  email: {
-    'ui:options': {
-      inputType: 'email'
-    }
-  },
-  address: {
-    'ui:widget': 'textarea'
-  },
-  'ui:submitButtonOptions': {
-    norender: true
-  }
-}
+const model = ref({
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  address: '',
+  landmark: '',
+  city: ''
+})
 </script>
 
 <template>
-  <Form
+  <FormBuilder
     :ref="formRef"
-    :formData="user"
-    :schema="schema"
-    :uiSchema="uiSchema"
-    :validator="validator"
-    :showErrorList="false"
-    @change="$emit('user', formData)"
+    :fields="fields"
+    v-model="model"
+    @update:modelValue="$emit('user', formData)"
   />
 </template>

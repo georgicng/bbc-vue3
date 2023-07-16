@@ -1,6 +1,6 @@
 <script setup>
-import validator from '@rjsf/validator-ajv8'
-import Form from '@rjsf/core'
+import { ref } from 'vue'
+import FormBuilder from '../form/FormBuilder.vue'
 
 const props = defineProps({
   showError: { type: Object, required: true },
@@ -8,22 +8,20 @@ const props = defineProps({
   delivery: { type: Object, required: true }
 })
 
-const schema = {
-  type: 'object',
-  properties: {
-    date: { type: 'string', title: 'Delivery Date', format: 'date' },
-    time: {
-      type: 'string',
-      title: 'Delivery Time',
-      oneOf: props.timeOptions
-    }
+const emit = defineEmits(['delivery'])
+
+const fields = {
+  date: { type: 'date', label: 'Delivery Date', format: 'date' },
+  time: {
+    type: 'select',
+    label: 'Delivery Time',
+    options: props.timeOptions
   }
 }
 
-const uiSchema = {
-  'ui:submitButtonOptions': {
-    norender: true
-  }
+const model = ref(props.delivery)
+const onChange = () => {
+  emit('delivery', model)
 }
 </script>
 
@@ -31,13 +29,11 @@ const uiSchema = {
   <div :class="`${showError && 'red'} card my-3`">
     <div class="card-header">Delivery Day</div>
     <div class="card-body">
-      <Form
-        :formData="delivery"
-        :schema="schema"
-        :uiSchema="uiSchema"
-        :validator="validator"
+      <FormBuilder
+        :modelValue="model"
+        :fields="fields"
         :showErrorList="false"
-        @change="$emit('delivery', formData)"
+        @change="onChange"
       />
       <small> For store pickups, you can call in to arrange an earlier time if need be </small>
     </div>
