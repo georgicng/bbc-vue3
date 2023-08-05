@@ -35,13 +35,13 @@ defineProps({
         <Multiselect
           :multiple="false"
           track-by="id"
-          label="name"
+          label="label"
           selectLabel="Click to select"
           deselectLabel="Click to remove"
-          :value="model[option.name]"
+          :model-value="model[option.name]"
           :options="option.options"
           :searchable="false"
-          @input="$emit('update:model', { key: option.name, value: $event })"
+          @update:model-value="$emit('update:model', { key: option.name, value: $event })"
         ></Multiselect>
       </div>
 
@@ -71,14 +71,14 @@ defineProps({
         <Multiselect
           :multiple="true"
           track-by="id"
-          label="name"
+          label="label"
           selectLabel="Click to select"
           deselectLabel="Click to remove"
-          :max="product_option.maximum"
-          :value="model[option.name]"
+          :max="option.maximum"
+          :model-value="model[option.name]"
           :options="option.options"
           :searchable="false"
-          @input="$emit('update:model', { key: option.name, value: $event })"
+          @update:model-value="$emit('update:model', { key: option.name, value: $event })"
         ></Multiselect>
       </div>
 
@@ -100,3 +100,7 @@ defineProps({
     </div>
   </div>
 </template>
+
+<style >
+@import "vue-multiselect/dist/vue-multiselect.css";
+</style>

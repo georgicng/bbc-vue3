@@ -17,4 +17,11 @@ instance.interceptors.request.use((request) => {
   return request;
 });
 
+export const paramsSerializer = (params) => {
+  // "Hide" the `answer` param
+  return Object.entries(Object.assign({}, params,  {})).
+    map(([key, value]) => `${key}=${value}`).
+    join('&');
+}
+
 export default instance;

@@ -91,7 +91,7 @@ export const useCartStore = defineStore('cart', () => {
   )
 
   const total = computed(
-    () => parseFloat(subtotal) + parseFloat(tax) + parseFloat(shippingRate) - parseFloat(discount)
+    () => parseFloat(subtotal.value) + parseFloat(tax.value) + parseFloat(shippingRate.value) - parseFloat(discount.value)
   )
 
   const order = computed(() => {

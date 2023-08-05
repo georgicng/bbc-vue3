@@ -45,7 +45,7 @@ defineProps({
           id="quantity"
           name="quantity"
           :value="quantity"
-          @change="$emit('update', $event.target.value)"
+          @change="$emit('change', $event.target.value)"
           class="form-control"
         />
         x N{{ price }}

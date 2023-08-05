@@ -54,7 +54,7 @@ export const useProductStore = defineStore('product', () => {
     try {
       loadingProduct.value = true
       const res = await getProduct(id, { depth })
-      product.value = res.data
+      product.value = res.data.data
     } catch (e) {
       productError.value = e
     } finally {

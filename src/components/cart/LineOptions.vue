@@ -27,6 +27,6 @@ const lineOptions = computed(() =>
         {{ item }}
       </div>
     </div>
-    <div v-else className="tag-item">{{ value }}</div>
+    <div v-else className="tag-item">{{ line.value }}</div>
   </div>
 </template>

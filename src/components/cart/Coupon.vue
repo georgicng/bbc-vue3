@@ -23,7 +23,7 @@ const onSubmit = (e) => {
       </a>
     </div>
     <div class="collapse" id="collapseExample">
-      <form class="card-body" @submit="onSubmit">
+      <form class="card-body" @submit.prevent="onSubmit">
         <div class="form-group">
           <label for="coupon">Enter Promo Code</label>
           <input type="text" name="coupon" class="form-control" id="coupon" :value="coupon" />

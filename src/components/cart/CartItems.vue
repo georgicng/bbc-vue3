@@ -14,7 +14,7 @@ defineProps({ cart: { type: Array, required: true } })
   </template>
   <ul class="list-unstyled cart-list">
     <li v-for="(item, index) in cart" :key="item.line.id">
-      <CartItem v-bind="item" @change="$emit('update', index)" />
+      <CartItem v-bind="item" @change="$emit('change', { index, quantity: $event })" @delete="$emit('delete', index)" />
     </li>
   </ul>
 </template>

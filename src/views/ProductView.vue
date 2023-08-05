@@ -2,11 +2,11 @@
 import { storeToRefs } from 'pinia'
 import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import useLoader from '../composable/useLoader'
-import { useProductStore } from '../stores/products'
+import { useLoader } from '../composables/useLoader'
+import { useProductStore } from '../stores/product'
 import { useCartStore } from '../stores/cart'
-import { OPTION_KEY_MAP, OPTION_TYPE_MAP } from '../utils/config'
-import { getOptions, getOptionIncrement, getOptionIncrementMap } from '../utils'
+import { OPTION_KEY_MAP, OPTION_TYPE_MAP } from '../utils/constants'
+import { getOptions, getOptionIncrement, getOptionIncrementMap } from '../utils/helpers'
 import Tabs from '../components/common/Tabs.vue'
 import ProductGallery from '../components/product/ProductGallery.vue'
 import ProductOptions from '../components/product/ProductOptions.vue'
@@ -17,13 +17,11 @@ const transform = (model, key = 'id') =>
     let value = model[_key]
 
     if (Array.isArray(value)) {
-      if (key === OPTION_KEY_MAP.SIZE) {
-        value = value[0][key]
-      } else {
-        value = value.map((item) => item[key])
-      }
+      value = value.map((item) => item[key])
+    } else if (typeof value === 'object') {
+      value = value[key]
     }
-
+    
     return { ...acc, [_key]: value }
   }, {})
 
@@ -76,12 +74,11 @@ const validate = (model) => {
   const _errorBag = {}
   options.value.forEach((option) => {
     if (option.required) {
-      if (
-        [OPTION_TYPE_MAP.CHECKBOX, OPTION_TYPE_MAP.SELECT].includes(option.type) &&
-        !model[option.name].length
-      ) {
+      if (option.type === OPTION_TYPE_MAP.CHECKBOX && !model[option.name]?.length) {
         _errorBag[option.name] = [`${option.name} cannot be empty`]
-      } else if (!model[option.name]) {
+      }
+
+      if (option.type === OPTION_TYPE_MAP.SELECT && !model[option.name]) {
         _errorBag[option.name] = [`${option.name} is required`]
       }
     }
@@ -107,7 +104,7 @@ const validate = (model) => {
   if (multi && !quantity.value) {
     _errorBag['quantity'] = `Please specify the quantity`
   }
-  validate.value = !Object.keys(_errorBag).length
+  valid.value = !Object.keys(_errorBag).length
   errorBag.value = _errorBag
 }
 
@@ -125,7 +122,7 @@ const handleChange = (key, value) => {
     quantity.value = value
   } else {
     newModel = {
-      ...model,
+      ...model.value,
       [key]: value
     }
   }
@@ -133,13 +130,14 @@ const handleChange = (key, value) => {
   if (newModel) model.value = newModel
 
   price.value =
-    (calculateTotalIncrement(transform(newModel || model)) + normalPrice.value) * quantity.value
+    (calculateTotalIncrement(transform(newModel || model.value)) + normalPrice.value) *
+    quantity.value
 
   validate(newModel || model.value)
   if (pristine.value) pristine.value = false
 }
 
-const { addItem } = useCartStore()
+const { cartAction } = useCartStore()
 const router = useRouter()
 const addToCart = () => {
   if (!valid.value) {
@@ -147,18 +145,18 @@ const addToCart = () => {
     showError.value = true
     return
   }
-  addItem({
-    line: product,
-    options: transform(model, 'label'),
-    quantity,
-    price
+  cartAction('add', {
+    line: product.value,
+    options: transform(model.value, 'label'),
+    quantity: quantity.value,
+    price: price.value
   })
   router.push('/cart')
 }
 </script>
 
 <template>
-  <div id="menu-detail-page">
+  <div v-if="product" id="menu-detail-page">
     <div class="container-fluid">
       <Title :name="product.name" :price="product.price" />
 
@@ -175,7 +173,7 @@ const addToCart = () => {
                   :model="model"
                   :errors="errorBag"
                   :showError="showError"
-                  @update:model="handleChange('model', $event)"
+                  @update:model="handleChange($event.key, $event.value)"
                 />
                 <div v-if="multi" class="form-group">
                   <div>
