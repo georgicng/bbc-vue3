@@ -1,8 +1,8 @@
 <script setup>
-import DeliveryPeriod from './shipping_cards/DeliveryPeriod'
-import ShippingRate from './shipping_cards/ShippingRate'
-import PaymentMethod from './shipping_cards/PaymentMethod'
-import ShippingMethod from './shipping_cards/ShippingMethod'
+import DeliveryPeriod from './shipping_cards/DeliveryPeriod.vue'
+import ShippingRate from './shipping_cards/ShippingRate.vue'
+import PaymentMethod from './shipping_cards/PaymentMethod.vue'
+import ShippingMethod from './shipping_cards/ShippingMethod.vue'
 
 defineProps({
   valid: { type: Object, required: true },

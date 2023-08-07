@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import text from './BasicInput.vue'
 import select from './BasicSelect.vue'
 import textarea from './InputArea.vue'
+import Datepicker from 'vuejs3-datepicker'
 
 const props = defineProps({
   fields: { type: Object, required: true },
@@ -14,8 +15,10 @@ const components = {
   number: text,
   email: text,
   select,
-  textarea
+  textarea,
+  date: Datepicker
 }
+const bind = computed(() => props.field?.props || {})
 const model = ref(props.modelValue)
 const records = computed(() =>
   Object.entries(props.fields).map(([key, value]) => ({ key, ...value }))
@@ -37,6 +40,7 @@ watch(
       :is="components[`${record.type}`]"
       :field="record"
       v-model="model[record.key]"
+      v-bind="bind"
     />
     <slot> </slot>
     <slot name="actions"><button type="submit" class="btn btn-primary mb-2">Submit</button></slot>

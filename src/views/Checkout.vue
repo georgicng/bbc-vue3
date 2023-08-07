@@ -1,12 +1,21 @@
 <script setup>
 import { storeToRefs } from 'pinia'
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onBeforeMount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLoader } from '../composables/useLoader'
 import { useCartStore } from '../stores/cart'
-import { getCityList, getShippingList, getPaymentOptions, getCityShippingMapping } from '../utils'
-import Heading from '../components/Heading'
-import Stepper from '../components/Stepper'
+import {
+  getCityList,
+  getShippingList,
+  getPaymentOptions,
+  getCityShippingMapping
+} from '../utils/helpers'
+import Heading from '@/components/common/Heading.vue'
+import Stepper from '@/components/common/Stepper.vue'
+import User from '@/components/checkout/User.vue'
+import Payment from '@/components/checkout/Payment.vue'
+import Confirmation from '@/components/checkout/Confirmation.vue'
+import Shipping from '@/components/checkout/Shipping.vue'
 
 const title = 'Checkout'
 const subtitle = 'Complete your order'
@@ -28,7 +37,7 @@ const {
   loadingConfig,
   config,
   isLoading: finishing,
-  transaction: orderReference, 
+  transaction: orderReference,
   loadingTransaction: submitting
 } = storeToRefs(orderStore)
 const {
@@ -40,10 +49,8 @@ const {
   addOrderId,
   fetchCheckoutConfig,
   submitOrder,
-  fetchTransaction,
+  fetchTransaction
 } = orderStore
-await fetchCheckoutConfig()
-
 const paymentOptions = ref([])
 const shippingOptions = ref({})
 const cityList = ref(['Other'])
@@ -51,12 +58,14 @@ const cityShippingMap = ref([])
 watch(
   config,
   (newVal) => {
+    console.log({ newVal })
     if (!newVal) {
       return
     }
     const shippingList = getShippingList(newVal.shipping_method)
     const cityMap = getCityShippingMapping(shippingList?.home?.options)
     const cities = getCityList(newVal.shipping_method)
+    console.log({ cities })
     const payments = getPaymentOptions(newVal.payment_methods)
     shippingOptions.value = shippingList
     cityShippingMap.value = cityMap
@@ -118,76 +127,84 @@ const handleChange = (key, value) => {
   }
 }
 
-const steps = [
-  { title: 'User Details', icon: 'fa fa-user', key: 'user' },
-  { title: 'Delivery Details', icon: 'fa fa-truck', key: 'shipping' },
-  { title: 'Confirm Order', icon: 'fa fa-check', key: 'confirm' },
-  { title: 'Complete Order', icon: 'fa fa-credit-card', key: 'pay' }
-]
 const activeStep = ref(0)
 const invalid = ref(false)
 const userRef = ref(null)
-const getSectionComponent = computed(() => {
-  const comps = [
-    {
-      key: () => import('../components/checkout/User.vue'),
-      bind: {
-        ref: userRef,
-        user,
-        cityList
-      }
-    },
-    {
-      key: () => import('../components/checkout/Shipping.vue'),
-      bind: {
-        showErrors: invalid,
-        shippingRate,
-        delivery,
-        timeOptions,
-        payment,
-        paymentOptions,
-        user,
-        shipping,
-        shippingOptions,
-        express,
-        cityShippingMap
-      }
-    },
-    {
-      key: () => import('../components/checkout/Confirmation.vue'),
-      bind: {
-        tos,
-        cart,
-        discount,
-        subtotal,
-        total,
-        shippingRate,
-        showError: invalid
-      }
-    },
-    {
-      key: () => import('../components/checkout/Payment.vue'),
-      bind: {
-        payment,
-        meta: paymentOptions[payment]?.meta
-      }
-    }
-  ]
-  return comps[activeStep]
-})
 
-const validateStep = (step) => {
-  switch (step) {
-    case 0:
+const steps = computed(() => [
+  {
+    title: 'User Details',
+    icon: 'fa fa-user',
+    key: 'user',
+    component: User,
+    props: {
+      ref: userRef,
+      user,
+      cityList
+    },
+    events: {},
+    validate() {
       return userRef.value.validate()
-    case 1:
+    }
+  },
+  {
+    title: 'Delivery Details',
+    icon: 'fa fa-truck',
+    key: 'shipping',
+    component: Shipping,
+    props: {
+      showErrors: invalid,
+      shippingRate,
+      delivery,
+      timeOptions,
+      payment,
+      paymentOptions,
+      user,
+      shipping,
+      shippingOptions,
+      express,
+      cityShippingMap
+    },
+    events: {},
+    validate() {
       return delivery?.date && delivery?.time && shipping?.id && payment
-    case 2:
+    }
+  },
+  {
+    title: 'Confirm Order',
+    icon: 'fa fa-check',
+    key: 'confirm',
+    component: Confirmation,
+    props: {
+      tos,
+      cart,
+      discount,
+      subtotal,
+      total,
+      shippingRate,
+      showError: invalid
+    },
+    events: {},
+    validate() {
       return tos
-    default:
+    }
+  },
+  {
+    title: 'Complete Order',
+    icon: 'fa fa-credit-card',
+    key: 'pay',
+    component: Payment,
+    props: {
+      payment,
+      meta: paymentOptions[payment]?.meta
+    },
+    events: {},
+    validate() {
       return true
+    }
   }
-}
+])
+
 
 const router = useRouter()
 const complete = async () => {
@@ -203,7 +220,7 @@ const complete = async () => {
 }
 
 const navigateTo = (to, current, hook) => {
-  const valid = validateStep(current)
+  const valid = steps.value[current].validate()
   if (!valid) {
     invalid.value = true
     return
@@ -214,6 +231,7 @@ const navigateTo = (to, current, hook) => {
   }
   activeStep.value = to
 }
+onBeforeMount(async () => await fetchCheckoutConfig())
 </script>
 
 <template>
@@ -223,54 +241,62 @@ const navigateTo = (to, current, hook) => {
       <div id="checkout-page" class="no-back">
         <div class="row">
           <div class="col-sm-12 offset-lg-2 col-lg-8">
-            <Stepper :steps="steps" :activeStep="activeStep" />
-            <div :style="{ padding: '20px' }">
-              <component :is="getSectionComponent.key" v-bind="getSectionComponent.bind" />
-            </div>
-            <div
-              class="`d-flex ${ activeStep !== 0 && activeStep !== steps.length - 1 ? 'justify-content-between' : 'justify-content-end' }`"
-              style="
-                 {
-                  padding: '0 20px';
-                }
-              "
-            >
-              <button
-                v-if="activeStep !== 0 && activeStep !== steps.length - 1"
-                class="btn"
-                @click="() => navigateTo(activeStep - 1, activeStep)"
-              >
-                Previous
-              </button>
-              <button
-                v-if="activeStep !== steps.length - 1"
-                class="btn"
-                :disabled="steps[activeStep].key === 'confirm' && submitting"
-                @click="
-                  () =>
-                    navigateTo(
-                      activeStep + 1,
-                      activeStep,
-                      steps[activeStep].key === 'confirm'
-                        ? async () => {
-                            await submitOrder(order)
-                            addOrderId(orderReference.order_id)
-                          }
-                        : null
-                    )
-                "
-              >
-                Next
-              </button>
-              <button
-                v-if="activeStep === steps.length - 1"
-                class="btn"
-                disabled="{finishing}"
-                onClick="{complete}"
-              >
-                Finish
-              </button>
-            </div>
+            <Stepper :steps="steps" :activeStep="activeStep">
+              <template #action>
+                <div
+                  :class="`d-flex ${
+                    activeStep !== 0 && activeStep !== steps.length - 1
+                      ? 'justify-content-between'
+                      : 'justify-content-end'
+                  }`"
+                  style="
+                     {
+                      padding: '0 20px';
+                    }
+                  "
+                >
+                  <button
+                    v-if="activeStep !== 0 && activeStep !== steps.length - 1"
+                    class="btn"
+                    @click="() => navigateTo(activeStep - 1, activeStep)"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    v-if="activeStep !== steps.length - 1"
+                    class="btn"
+                    :disabled="steps[activeStep].key === 'confirm' && submitting"
+                    @click="
+                      () =>
+                        navigateTo(
+                          activeStep + 1,
+                          activeStep,
+                          steps[activeStep].key === 'confirm'
+                            ? async () => {
+                                await submitOrder(order)
+                                addOrderId(orderReference.order_id)
+                              }
+                            : null
+                        )
+                    "
+                  >
+                    Next
+                  </button>
+                  <button
+                    v-if="activeStep === steps.length - 1"
+                    class="btn"
+                    :disabled="finishing"
+                    @click="
+                      {
+                        complete
+                      }
+                    "
+                  >
+                    Finish
+                  </button>
+                </div>
+              </template>
+            </Stepper>
           </div>
         </div>
       </div>

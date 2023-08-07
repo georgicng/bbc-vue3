@@ -1,7 +1,7 @@
 <script setup>
-import { Link } from 'react-router-dom'
-import CartItems from '../cart/CartItems'
-import CartTotals from '../cart/CartTotals'
+import { RouterLink } from 'vue-router'
+import CartItems from '../cart/CartItems.vue'
+import CartTotals from '../cart/CartTotals.vue'
 
 defineProps({
   cart: { type: Object, required: true },
@@ -30,12 +30,12 @@ defineProps({
       type="checkbox"
       id="tos"
       :checked="tos"
-      @change="$emit('tos', e.target.value)"
+      @change="$emit('tos', $event.target.value)"
     />
     <label class="custom-control-label" for="tos">
       <h4>
         I agree to" "
-        <Link to="/terms" target="_blank"> Terms of Service </Link>
+        <router-link to="/terms" target="_blank"> Terms of Service </router-link>
       </h4>
     </label>
     <div v-if="showError && !tos" class="error">

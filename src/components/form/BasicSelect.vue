@@ -22,8 +22,8 @@ const { input, errors } = useInputValidator(props.modelValue, props.validators, 
       :name="field.name"
       v-model="input"
     >
-      <option v-for="(option, key) in field.options" :key="key" :value="option.value">
-        {{ option.text }}
+      <option v-for="(option, key) in field.options" :key="key" :value="option?.value || option">
+        {{ option?.text || option }}
       </option>
     </select>
     <ErrorDisplay :errors="errors" />

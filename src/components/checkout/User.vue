@@ -21,7 +21,7 @@ const fields = computed(() => ({
     options: props.cityList,
     validators: ['required']
   },
-  ...(props.user.city === 'Other'
+  ...(props.user?.city === 'Other'
     ? {
         altCity: {
           type: 'text',

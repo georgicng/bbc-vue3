@@ -29,7 +29,7 @@ const router = createRouter({
       path: '/details/:id',
       name: 'product',
       // route level code-splitting
-      // this generates a separate chunk (Products.[hash].js) for this route
+      // this generates a separate chunk (Product.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/ProductView.vue')
     },
@@ -37,9 +37,17 @@ const router = createRouter({
       path: '/cart',
       name: 'cart',
       // route level code-splitting
-      // this generates a separate chunk (Products.[hash].js) for this route
+      // this generates a separate chunk (Cart.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/CartView.vue')
+    },
+    {
+      path: '/checkout',
+      name: 'checkout',
+      // route level code-splitting
+      // this generates a separate chunk (Checkout.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import('../views/Checkout.vue')
     },
     {
       path: '/about',

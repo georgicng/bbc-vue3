@@ -146,11 +146,12 @@ export const useCartStore = defineStore('cart', () => {
 
   const loadingConfig = ref(false)
   const configError = ref(null)
-  const config = ref(0)
+  const config = ref(null)
   async function fetchCheckoutConfig() {
     try {
       loadingConfig.value = true
       const res = await getCheckoutOptions()
+      console.log({ config: res.data })
       config.value = res.data
     } catch (e) {
       configError.value = e
@@ -211,6 +212,8 @@ export const useCartStore = defineStore('cart', () => {
     coupon,
     order,
     setOrderId,
+    config,
+    loadingConfig,
     setCoupon,
     setDelivery,
     setDiscount,
