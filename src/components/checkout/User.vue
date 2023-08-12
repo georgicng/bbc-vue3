@@ -38,6 +38,7 @@ const fields = computed(() => ({
     :ref="formRef"
     :fields="fields"
     :modelValue="user"
+    :showAction="false"
     @update:modelValue="$emit('user', $event)"
   />
 </template>
