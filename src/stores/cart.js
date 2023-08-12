@@ -1,6 +1,5 @@
-import { defineStore, storeToRefs } from 'pinia'
+import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useStoreHelper } from '../composables/useStoreHelper'
 import {
   addOrder,
   getCouponValue,
@@ -9,17 +8,12 @@ import {
 } from '../services/order.service'
 
 export const useCartStore = defineStore('cart', () => {
-  const { request, setter } = useStoreHelper()
 
-  const orderIdHelper = setter('orderId', null)
-  const {
-    orderId
-  } = storeToRefs(orderIdHelper)
-  const { setOrderId } = orderIdHelper
-  /* const orderId = ref(null)
+
+  const orderId = ref(null)
   const setOrderId = (payload) => {
     orderId.value = payload
-  } */
+  }
 
   const discount = ref(0)
   const setDiscount = (payload) => {
@@ -176,19 +170,10 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  
-  const actionHelper = request('transaction', confirmOrder)
-  const {
-    loadingTransaction,
-    transactionError,
-    transaction
-  } = storeToRefs(actionHelper)
-  const { fetchTransaction } = actionHelper
-
-  /*  const processingTransaction = ref(false)
+  const processingTransaction = ref(false)
   const transactionError = ref(null)
   const transaction = ref(null)
-  async function completeTranscation(payload) {
+  async function completeTransaction(payload) {
     try {
       processingTransaction.value = true
       const res = await confirmOrder(payload)
@@ -199,9 +184,14 @@ export const useCartStore = defineStore('cart', () => {
     } finally {
       processingTransaction.value = false
     }
-  } */
+  }
 
   return {
+    delivery,
+    user,
+    tos,
+    payment,
+    shipping,
     cart,
     discount,
     orderId,
@@ -211,8 +201,10 @@ export const useCartStore = defineStore('cart', () => {
     shippingRate,
     coupon,
     order,
+    quote,
     setOrderId,
     config,
+    transaction,
     loadingConfig,
     setCoupon,
     setDelivery,
@@ -225,9 +217,8 @@ export const useCartStore = defineStore('cart', () => {
     fetchCouponValue,
     fetchCheckoutConfig,
     submitOrder,
-    loadingTransaction,
-    fetchTransaction,
+    processingTransaction,
+    completeTransaction,
     transactionError,
-    transaction
   }
 })

@@ -21,7 +21,7 @@ defineProps({
           :value="item.id"
           class="custom-control-input"
           :checked="payment === item.id"
-          @change="$emit('payment', $event.target.value)"
+          @change="$emit('update:payment', $event.target.value)"
         />
         <label class="custom-control-label panel-body" :for="item.id">
           <h3>{{ item.name }}</h3>

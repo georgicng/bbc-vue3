@@ -27,9 +27,9 @@ defineProps({
             :value="item.id"
             :checked="shipping.id == item.id"
             @change="
-              $emit('shipping', {
+              $emit('update:shipping', {
                 type: key,
-                id: e.target.value,
+                id: $event.target.value,
                 rate: item.cost
               })
             "
@@ -41,44 +41,46 @@ defineProps({
           </label>
         </div>
       </template>
-      <template v-if="user.city !== 'Other'">
-        <div class="custom-control custom-radio">
-          <input
-            type="radio"
-            :value="cityShippingMap[user.city].id"
-            :id="cityShippingMap[user.city].id"
-            class="custom-control-input"
-            :checked="shipping.id == cityShippingMap[user.city].id"
-            @change="
-              $emit('shipping', {
-                type: key,
-                id: e.target.value,
-                rate: cityShippingMap[user.city].cost
-              })
-            "
-          />
-          <label class="custom-control-label" :for="cityShippingMap[user.city].id">
-            <h4>
-              {{ cityShippingMap[user.city].title }}
-              <span class="badge"> N{{ cityShippingMap[user.city].cost }} </span>
-            </h4>
-          </label>
-        </div>
-        <div
-          v-if="shipping.id == cityShippingMap[user.city].id"
-          class="custom-control custom-checkbox"
-        >
-          <input
-            type="checkbox"
-            class="custom-control-input"
-            id="express"
-            checked="{shipping?.express}"
-            onChange="$emit('express', e.target.value)"
-          />
-          <label class="custom-control-label" for="express">
-            <h4>Express Delivery <span class="badge">N1000</span></h4>
-          </label>
-        </div>
+      <template v-else>
+        <template v-if="user.city !== 'Other'">
+          <div class="custom-control custom-radio">
+            <input
+              type="radio"
+              :value="cityShippingMap[user.city].id"
+              :id="cityShippingMap[user.city].id"
+              class="custom-control-input"
+              :checked="shipping.id == cityShippingMap[user.city].id"
+              @change="
+                $emit('update:shipping', {
+                  type: key,
+                  id: $event.target.value,
+                  rate: cityShippingMap[user.city].cost
+                })
+              "
+            />
+            <label class="custom-control-label" :for="cityShippingMap[user.city].id">
+              <h4>
+                {{ cityShippingMap[user.city].title }}
+                <span class="badge"> N{{ cityShippingMap[user.city].cost }} </span>
+              </h4>
+            </label>
+          </div>
+          <div
+            v-if="shipping.id == cityShippingMap[user.city].id"
+            class="custom-control custom-checkbox"
+          >
+            <input
+              type="checkbox"
+              class="custom-control-input"
+              id="express"
+              :checked="shipping?.express"
+              @change="$emit('update:express', $event.target.value)"
+            />
+            <label class="custom-control-label" for="express">
+              <h4>Express Delivery <span class="badge">N1000</span></h4>
+            </label>
+          </div>
+        </template>
       </template>
     </div>
     <div v-if="showError" class="card-body error">Please select a delivery method</div>

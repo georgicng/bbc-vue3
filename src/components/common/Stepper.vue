@@ -3,14 +3,14 @@ import { computed } from 'vue'
 
 const props = defineProps({
   steps: { type: Array, required: true },
-  activeStep: { type: Number, required: true }
+  stepIndex: { type: Number, required: true }
 })
 
 const getStepClass = (step) => {
   let cls = 'step'
-  if (props.activeStep === step) {
+  if (props.stepIndex === step) {
     cls += ' step-active'
-  } else if (props.activeStep > step) {
+  } else if (props.stepIndex > step) {
     cls += ' step-done'
   } else {
     cls += ' step-inactive'
@@ -19,7 +19,7 @@ const getStepClass = (step) => {
 }
 
 const step = computed(() => {
-  return props.steps[props.activeStep]
+  return props.steps[props.stepIndex]
 })
 </script>
 

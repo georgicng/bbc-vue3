@@ -31,23 +31,13 @@ const fields = computed(() => ({
       }
     : {})
 }))
-
-const model = ref({
-  firstName: '',
-  lastName: '',
-  email: '',
-  phone: '',
-  address: '',
-  landmark: '',
-  city: ''
-})
 </script>
 
 <template>
   <FormBuilder
     :ref="formRef"
     :fields="fields"
-    v-model="model"
-    @update:modelValue="$emit('user', formData)"
+    :modelValue="user"
+    @update:modelValue="$emit('user', $event)"
   />
 </template>

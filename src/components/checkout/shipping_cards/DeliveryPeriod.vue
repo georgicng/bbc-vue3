@@ -9,7 +9,7 @@ const props = defineProps({
   express: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['delivery'])
+defineEmits(['update:delivery'])
 
 const getDate = () => {
   const today = new Date()
@@ -41,18 +41,19 @@ const fields = computed(() => ({
     options: props.timeOptions
   }
 }))
-
-const model = ref(props.delivery)
-const onChange = () => {
-  emit('delivery', model)
-}
 </script>
 
 <template>
   <div :class="`${showError && 'red'} card my-3`">
     <div class="card-header">Delivery Day</div>
     <div class="card-body">
-      <FormBuilder :modelValue="model" :fields="fields" :showErrorList="false" @change="onChange" />
+      <FormBuilder
+        :modelValue="delivery"
+        :fields="fields"
+        :showErrorList="false"
+        :showAction="false"
+        @update:model-value="$emit('update:delivery', $event)"
+      />
       <small> For store pickups, you can call in to arrange an earlier time if need be </small>
     </div>
     <div v-if="showError" class="card-body error">Please select a delivery date && time</div>

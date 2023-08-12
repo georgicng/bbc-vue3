@@ -3,11 +3,12 @@ import { computed, ref, watch } from 'vue'
 import text from './BasicInput.vue'
 import select from './BasicSelect.vue'
 import textarea from './InputArea.vue'
-import Datepicker from 'vuejs3-datepicker'
+import Datepicker from './DatePicker.vue'
 
 const props = defineProps({
   fields: { type: Object, required: true },
-  modelValue: { type: Object, required: true }
+  modelValue: { type: Object, required: true },
+  showAction: { type: Boolean, default: true }
 })
 const emit = defineEmits(['change', 'submit'])
 const components = {
@@ -23,6 +24,7 @@ const model = ref(props.modelValue)
 const records = computed(() =>
   Object.entries(props.fields).map(([key, value]) => ({ key, ...value }))
 )
+
 watch(
   model,
   (value) => {
@@ -43,6 +45,8 @@ watch(
       v-bind="bind"
     />
     <slot> </slot>
-    <slot name="actions"><button type="submit" class="btn btn-primary mb-2">Submit</button></slot>
+    <slot v-if="showAction" name="actions">
+      <button type="submit" class="btn btn-primary mb-2">Submit</button>
+    </slot>
   </form>
 </template>

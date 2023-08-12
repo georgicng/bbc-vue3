@@ -1,12 +1,18 @@
 <script setup>
 import useInputValidator from '../../composables/useInputValidator'
 import ErrorDisplay from './ErrorDisplay.vue'
+import Datepicker from 'vuejs3-datepicker'
 
 const props = defineProps({
-  field: { type: Object, required: true },
-  modelValue: { type: String, required: true }
+  field: {
+    type: Object,
+    required: true
+  },
+  modelValue: {
+    type: [String],
+    default: ''
+  }
 })
-
 const emit = defineEmits(['update:modelValue'])
 const { input, errors } = useInputValidator(props.modelValue, props.validators, (value) =>
   emit('update:modelValue', value)
@@ -16,16 +22,12 @@ const { input, errors } = useInputValidator(props.modelValue, props.validators, 
 <template>
   <div class="form-group" :class="[field.cols ? `cols-md-${field.cols}` : '']">
     <label :for="field.name">{{ field.label }}</label>
-    <select
+    <Datepicker
       class="form-control"
       :id="field.name"
-      :name="field.name"
       v-model="input"
-    >
-      <option v-for="(option, key) in field.options" :key="key" :value="option?.value || option">
-        {{ option?.label || option }}
-      </option>
-    </select>
+      v-bind="$attrs"
+    />
     <ErrorDisplay :errors="errors" />
   </div>
 </template>

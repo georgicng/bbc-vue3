@@ -6,7 +6,7 @@ import ShippingMethod from './shipping_cards/ShippingMethod.vue'
 
 defineProps({
   valid: { type: Object, required: true },
-  shippingRate: { type: Object, required: true },
+  shippingRate: { type: Number, required: true },
   delivery: { type: Object, required: true },
   timeOptions: { type: Object, required: true },
   payment: { type: Object, required: true },
@@ -28,23 +28,25 @@ defineProps({
         :shipping="shipping"
         :shippingOptions="shippingOptions"
         :cityShippingMap="cityShippingMap"
-        @change="$emit('change')"
+        @update:shipping="$emit('shipping', $event)"
+        @update:express="$emit('express', $event)"
       />
       <DeliveryPeriod
         :valid="valid && delivery?.time && delivery?.date"
         :delivery="delivery"
         :timeOptions="timeOptions"
+        :express="shipping.express"
         :showError="showErrors && !(delivery?.date && delivery?.time)"
-        @change="$emit('change')"
+        @update:delivery="$emit('delivery', $event)"
       />
     </div>
     <div class="col-md-6 mb-3">
-      <ShippingRate shippingRate="{shippingRate}" />
+      <ShippingRate :shippingRate="shippingRate" />
       <PaymentMethod
         :showError="showErrors && !payment"
         :payment="payment"
         :paymentOptions="paymentOptions"
-        @change="$emit('change')"
+        @update:payment="$emit('payment', $event)"
       />
     </div>
   </div>

@@ -30,27 +30,18 @@ const {
   shippingRate,
   tos,
   payment,
-  express,
   shipping,
   order,
   orderId,
   loadingConfig,
   config,
-  isLoading: finishing,
-  transaction: orderReference,
-  loadingTransaction: submitting
+  quote,
+  transaction
 } = storeToRefs(orderStore)
-const {
-  addUserDetails,
-  addShipping,
-  addPaymentMethod,
-  addDeliveryPeriod,
-  acceptTerms,
-  addOrderId,
-  fetchCheckoutConfig,
-  submitOrder,
-  fetchTransaction
-} = orderStore
+const { addOrderId, fetchCheckoutConfig, submitOrder, completeTransaction } = orderStore
+
+onBeforeMount(async () => await fetchCheckoutConfig())
+
 const paymentOptions = ref([])
 const shippingOptions = ref({})
 const cityList = ref(['Other'])
@@ -58,14 +49,12 @@ const cityShippingMap = ref([])
 watch(
   config,
   (newVal) => {
-    console.log({ newVal })
     if (!newVal) {
       return
     }
     const shippingList = getShippingList(newVal.shipping_method)
     const cityMap = getCityShippingMapping(shippingList?.home?.options)
     const cities = getCityList(newVal.shipping_method)
-    console.log({ cities })
     const payments = getPaymentOptions(newVal.payment_methods)
     shippingOptions.value = shippingList
     cityShippingMap.value = cityMap
@@ -79,18 +68,18 @@ useLoader(loadingConfig)
 const timeOptions = computed(
   () => [
     {
-      const: '11-1 PM',
-      title: '11AM - 1PM'
+      value: '11-1 PM',
+      label: '11AM - 1PM'
     },
     {
-      const: '1-3 PM',
-      title: '1-3 PM'
+      value: '1-3 PM',
+      label: '1-3 PM'
     },
-    ...(shipping?.type === 'partner'
+    ...(shipping.value?.type === 'partner'
       ? [
           {
-            const: '3-5 PM',
-            title: '3-5 PM'
+            value: '3-5 PM',
+            label: '3-5 PM'
           }
         ]
       : [])
@@ -98,38 +87,10 @@ const timeOptions = computed(
   [shipping]
 )
 
-const handleChange = (key, value) => {
-  console.log({ key, value })
-  switch (key) {
-    case 'user':
-      addUserDetails(value)
-      break
-    case 'shipping':
-      addShipping(value)
-      break
-    case 'express':
-      addShipping({
-        ...shipping,
-        express: shipping.express ? 0 : 1000
-      })
-      break
-    case 'payment':
-      addPaymentMethod(value)
-      break
-    case 'delivery':
-      addDeliveryPeriod(value)
-      break
-    case 'tos':
-      acceptTerms(tos ? false : true)
-      break
-    default:
-      return null
-  }
-}
-
-const activeStep = ref(0)
 const invalid = ref(false)
+const disabled = ref(false)
 const userRef = ref(null)
+const router = useRouter()
 
 const steps = computed(() => [
   {
@@ -138,13 +99,17 @@ const steps = computed(() => [
     key: 'user',
     component: User,
     props: {
-      ref: userRef,
-      user,
-      cityList
+      ref: userRef.value,
+      user: user.value,
+      cityList: cityList.value
     },
-    events: {},
+    events: {
+      user($event) {
+        user.value = $event
+      }
+    },
     validate() {
-      return userRef.value.validate()
+      return true //userRef.value.validate()
     }
   },
   {
@@ -153,21 +118,36 @@ const steps = computed(() => [
     key: 'shipping',
     component: Shipping,
     props: {
-      showErrors: invalid,
-      shippingRate,
-      delivery,
-      timeOptions,
-      payment,
-      paymentOptions,
-      user,
-      shipping,
-      shippingOptions,
-      express,
-      cityShippingMap
+      showErrors: invalid.value,
+      shippingRate: shippingRate.value,
+      delivery: delivery.value,
+      timeOptions: timeOptions.value,
+      payment: payment.value,
+      paymentOptions: paymentOptions.value,
+      user: user.value,
+      shipping: shipping.value,
+      shippingOptions: shippingOptions.value,
+      cityShippingMap: cityShippingMap.value
     },
-    events: {},
+    events: {
+      shipping($event) {
+        shipping.value = $event
+      },
+      payment($event) {
+        payment.value = $event
+      },
+      delivery($event) {
+        delivery.value = $event
+      },
+      express() {
+        shipping.value = {
+          ...shipping.value,
+          express: shipping.value.express ? 0 : 1000,
+        }
+      },
+    },
     validate() {
-      return delivery?.date && delivery?.time && shipping?.id && payment
+      return delivery.value?.date && delivery.value?.time && shipping.value?.id && payment.value
     }
   },
   {
@@ -176,17 +156,29 @@ const steps = computed(() => [
     key: 'confirm',
     component: Confirmation,
     props: {
-      tos,
-      cart,
-      discount,
-      subtotal,
-      total,
-      shippingRate,
-      showError: invalid
+      tos: tos.value,
+      cart: cart.value,
+      discount: discount.value,
+      subtotal: subtotal.value,
+      total: total.value,
+      shippingRate: shippingRate.value,
+      showError: invalid.value
     },
-    events: {},
+    events: {
+      tos($event) {
+        tos.value = $event
+      }
+    },
     validate() {
-      return tos
+      return tos.value
+    },
+    hooks: {
+      post: async () => {
+        disabled.value = true
+        await submitOrder(order.value)
+        quote.value?.order_id && addOrderId(quote.value.order_id)
+        disabled.value = false
+      }
     }
   },
   {
@@ -195,43 +187,59 @@ const steps = computed(() => [
     key: 'pay',
     component: Payment,
     props: {
-      payment,
-      meta: paymentOptions[payment]?.meta
+      payment: payment.value,
+      meta: paymentOptions.value[payment]?.meta
     },
     events: {},
     validate() {
       return true
+    },
+    hooks: {
+      post: async () => {
+        if (payment === 'transfer') {
+          disabled.value = true
+          const payload = {
+            order: orderId.value,
+            payment: 'Transfer',
+            confirm: true
+          }
+          await completeTransaction(payload)
+          disabled.value = false
+          router.push('/success')
+        }
+      }
     }
   }
 ])
 
+const activeStep = ref(1)
+const lastStep = computed(() => activeStep.value === steps.value.length)
+const firstStep = computed(() => activeStep.value === 1)
+const navigateTo = async (to) => {
+  const step = steps.value[activeStep.value - 1]
 
-const router = useRouter()
-const complete = async () => {
-  if (payment === 'transfer') {
-    const payload = {
-      order: orderId,
-      payment: 'Transfer',
-      confirm: true
+  const prev = to < activeStep.value
+  if (prev) {
+    if (step?.hooks?.pre) {
+      await step.hooks.pre()
     }
-    await submitOrder(payload)
-    router.push('/success')
+    activeStep.value = to
+    return
   }
-}
 
-const navigateTo = (to, current, hook) => {
-  const valid = steps.value[current].validate()
+  const valid = step.validate()
   if (!valid) {
     invalid.value = true
     return
   }
   invalid.value = false
-  if (typeof hook === 'function') {
-    hook()
+  if (step?.hooks?.post) {
+    await step.hooks.post()
   }
-  activeStep.value = to
+  if (to < steps.value.length) {
+    activeStep.value = to
+  }
 }
-onBeforeMount(async () => await fetchCheckoutConfig())
 </script>
 
 <template>
@@ -241,14 +249,10 @@ onBeforeMount(async () => await fetchCheckoutConfig())
       <div id="checkout-page" class="no-back">
         <div class="row">
           <div class="col-sm-12 offset-lg-2 col-lg-8">
-            <Stepper :steps="steps" :activeStep="activeStep">
+            <Stepper :steps="steps" :stepIndex="activeStep - 1">
               <template #action>
                 <div
-                  :class="`d-flex ${
-                    activeStep !== 0 && activeStep !== steps.length - 1
-                      ? 'justify-content-between'
-                      : 'justify-content-end'
-                  }`"
+                  :class="`d-flex ${firstStep ? 'justify-content-end' : 'justify-content-between'}`"
                   style="
                      {
                       padding: '0 20px';
@@ -256,43 +260,19 @@ onBeforeMount(async () => await fetchCheckoutConfig())
                   "
                 >
                   <button
-                    v-if="activeStep !== 0 && activeStep !== steps.length - 1"
+                    v-if="!firstStep"
                     class="btn"
-                    @click="() => navigateTo(activeStep - 1, activeStep)"
+                    :disabled="disabled"
+                    @click="() => navigateTo(activeStep - 1)"
                   >
                     Previous
                   </button>
                   <button
-                    v-if="activeStep !== steps.length - 1"
                     class="btn"
-                    :disabled="steps[activeStep].key === 'confirm' && submitting"
-                    @click="
-                      () =>
-                        navigateTo(
-                          activeStep + 1,
-                          activeStep,
-                          steps[activeStep].key === 'confirm'
-                            ? async () => {
-                                await submitOrder(order)
-                                addOrderId(orderReference.order_id)
-                              }
-                            : null
-                        )
-                    "
+                    :disabled="disabled"
+                    @click="() => navigateTo(activeStep + 1)"
                   >
-                    Next
-                  </button>
-                  <button
-                    v-if="activeStep === steps.length - 1"
-                    class="btn"
-                    :disabled="finishing"
-                    @click="
-                      {
-                        complete
-                      }
-                    "
-                  >
-                    Finish
+                    {{ lastStep ? 'Finish' : 'Next' }}
                   </button>
                 </div>
               </template>

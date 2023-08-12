@@ -38,7 +38,7 @@ defineProps({
     <div class="item-text dish-list-text">
       <div>{{ line.name }}</div>
       <div>
-        <label htmlFor="quantity">Qty:</label>
+        <label for="quantity">Qty:</label>
         <input
           type="number"
           min="1"
